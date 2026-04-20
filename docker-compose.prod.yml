@@ -1,0 +1,65 @@
+name: sonarqube-prod
+
+services:
+  # 1. Database Service: 운영 환경의 필수 요소인 외부 DB (PostgreSQL)
+  sonarqube-db:
+    image: postgres:15-alpine
+    container_name: sonarqube-db-prod
+    networks:
+      - sonarnet
+    environment:
+      # .env 파일에 정의된 변수를 주입받습니다.
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      # DB 데이터 영속성 확보
+      - ./postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # 2. SonarQube Server Service
+  sonarqube:
+    # 1. 빌드 설정: Dockerfile이 같은 폴더에 있다면 아래처럼 빌드 정보를 기록합니다.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sonarqube-custom:26.4.0-prod
+    container_name: sonarqube-prod-server
+    depends_on:
+      - sonarqube-db
+    networks:
+      - sonarnet
+    
+    # 2. 포트 설정: 외부에서 39000번 포트로 접속 허용
+    ports:
+      - "39000:9000"
+    
+    # 3. 데이터 보존 설정: 컨테이너가 삭제되어도 데이터는 로컬 PC에 남도록 마운트
+    # (호스트의 현재 경로 하위에 각각의 폴더가 생성됩니다.)
+    volumes:
+      - ./sonarqube_prod_data:/opt/sonarqube/data
+      - ./sonarqube_prod_logs:/opt/sonarqube/logs
+      - ./sonarqube_prod_extensions:/opt/sonarqube/extensions
+    
+    # 4. 성능 및 환경 설정
+    environment:
+      - TZ=Asia/Seoul
+
+      - SONAR_JDBC_URL=${SONAR_JDBC_URL}
+      - SONAR_JDBC_USERNAME=${SONAR_JDBC_USERNAME}
+      - SONAR_JDBC_PASSWORD=${DB_PASSWORD}
+
+      # [운영 최적화 메모리] 총합 약 4GB 할당 (시스템 RAM 8GB 이상 권장)
+      # Web: UI 및 API 처리 / CE: 분석 보고서 생성 / Search: 검색 및 인덱싱
+      - SONAR_WEB_JAVAOPTS=-Xmx1g -Xms1g -XX:+HeapDumpOnOutOfMemoryError
+      - SONAR_CE_JAVAOPTS=-Xmx1g -Xms1g -XX:+HeapDumpOnOutOfMemoryError
+      - SONAR_SEARCH_JAVAOPTS=-Xmx1g -Xms1g
+    
+    # 5. 재시작 정책: 도커 엔진 재시작 시 자동으로 구동
+    restart: unless-stopped
+
+    # 6. 리눅스/WSL 환경에서 Elasticsearch 구동을 위한 커널 파라미터 제약 해결
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536

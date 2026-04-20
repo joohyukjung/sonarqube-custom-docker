@@ -1,0 +1,17 @@
+# SonarQube 데이터 및 로그 (개발/운영 공통)
+sonarqube_dev_data/
+sonarqube_dev_logs/
+sonarqube_dev_extensions/
+sonarqube_prod_data/
+sonarqube_prod_logs/
+sonarqube_prod_extensions/
+
+# PostgreSQL 데이터
+postgres_data/
+
+# 환경 변수 파일 (절대 업로드 금지)
+.env
+
+# 시스템 파일
+.DS_Store
+Thumbs.db

@@ -1,0 +1,39 @@
+name: sonarqube-dev
+
+services:
+  sonarqube:
+    # 1. 빌드 설정: Dockerfile이 같은 폴더에 있다면 아래처럼 빌드 정보를 기록합니다.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sonarqube-custom:26.4.0-dev
+    container_name: sonarqube-dev-server
+    
+    # 2. 포트 설정: 외부에서 39000번 포트로 접속 허용
+    ports:
+      - "39000:9000"
+    
+    # 3. 데이터 보존 설정: 컨테이너가 삭제되어도 데이터는 로컬 PC에 남도록 마운트
+    # (호스트의 현재 경로 하위에 각각의 폴더가 생성됩니다.)
+    volumes:
+      - ./sonarqube_dev_data:/opt/sonarqube/data
+      - ./sonarqube_dev_logs:/opt/sonarqube/logs
+      - ./sonarqube_dev_extensions:/opt/sonarqube/extensions
+    
+    # 4. 성능 및 환경 설정
+    environment:
+      - TZ=Asia/Seoul
+      # [개발 최적화 메모리] 구동 가능한 절대 최소 사양 (각 512MB, 총 약 2GB 소요)
+      # Web: UI 및 API 처리 / CE: 분석 보고서 생성 / Search: 검색 및 인덱싱
+      - SONAR_WEB_JAVAOPTS=-Xmx512m -Xms512m
+      - SONAR_CE_JAVAOPTS=-Xmx512m -Xms512m
+      - SONAR_SEARCH_JAVAOPTS=-Xmx512m -Xms512m
+    
+    # 5. 재시작 정책: 도커 엔진 재시작 시 자동으로 구동
+    restart: unless-stopped
+
+    # 6. 리눅스/WSL 환경에서 Elasticsearch 구동을 위한 커널 파라미터 제약 해결
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
