@@ -27,7 +27,8 @@ services:
       # Web: UI 및 API 처리 / CE: 분석 보고서 생성 / Search: 검색 및 인덱싱
       - SONAR_WEB_JAVAOPTS=-Xmx512m -Xms512m
       - SONAR_CE_JAVAOPTS=-Xmx512m -Xms512m
-      - SONAR_SEARCH_JAVAOPTS=-Xmx512m -Xms512m
+      # 검색 엔진은 인덱싱 데이터가 적은 개발 환경 특성상 256MB로 줄여도 무방합니다.
+      - SONAR_SEARCH_JAVAOPTS=-Xmx256m -Xms256m
     
     # 5. 재시작 정책: 도커 엔진 재시작 시 자동으로 구동
     restart: unless-stopped
