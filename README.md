@@ -1,20 +1,19 @@
 # SonarQube Production Infrastructure
 
-운영 환경용 SonarQube 분석 플랫폼 서버 구축 프로젝트입니다. 
-외부 PostgreSQL 데이터베이스를 연동하여 데이터 영속성을 확보하였으며, 보안을 위해 환경 변수를 분리 관리합니다.
+운영/개발 환경용 SonarQube 서버 입니다.
+외부 PostgreSQL 데이터베이스를 연동하였으며, 보안을 위해 환경 변수를 분리 관리합니다.
 
 ## 🛠 포함된 플러그인 (Installed Plugins)
 
 현재 Dockerfile을 통해 이미지 빌드 시 아래의 정적 분석 플러그인이 자동으로 설치됩니다.
-- **Sonar-FindBugs (SpotBugs)**: Java 코드의 잠재적 버그 탐지 (v5.0.5)
+- **Sonar-FindBugs (SpotBugs)**: Java 코드의 잠재적 버그 탐지 (v4.6.0)
 - **Sonar-PMD**: 코드 스타일 및 복잡도 분석 (v4.2.1)
-- **Sonar-Checkstyle**: 코딩 컨벤션 준수 여부 확인 (v10.12.4)
+- **Sonar-Checkstyle**: 코딩 컨벤션 준수 여부 확인 (v10.26.1)
 
 ## 🚀 시작하기 (Quick Start)
 
 ### 1. 환경 변수 설정
 프로젝트 최상단에 `.env` 파일을 생성하고 아래 내용을 입력합니다. (보안을 위해 `.env` 파일은 Git 추적에서 제외됨)
-
 ```env
 DB_USER=your_user
 DB_PASSWORD=your_password
